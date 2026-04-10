@@ -45,12 +45,9 @@ wss.on('connection', (ws) => {
             if (parsedMessage.type === 'search' && typeof parsedMessage.query === 'string') {
                 const query = parsedMessage.query;
                 
-                // Search MongoDB
+                // Search MongoDB by title only
                 const posts = await Post.find({
-                    $or: [
-                        { title: { $regex: query, $options: "i" } },
-                        { body: { $regex: query, $options: "i" } }
-                    ]
+                    title: { $regex: query, $options: "i" }
                 });
 
                 ws.send(JSON.stringify({

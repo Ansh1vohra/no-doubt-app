@@ -5,7 +5,7 @@ const SearchBar = ({ onSearch }) => {
   const [searchTerm, setSearchTerm] = useState('');
   
   const onSearchRef = useRef(onSearch);
-  const isFirstMount = useRef(true);
+  const prevSearchTerm = useRef('');
 
   // Keep the ref updated with the latest callback to avoid stale closures
   useEffect(() => {
@@ -14,10 +14,11 @@ const SearchBar = ({ onSearch }) => {
 
   // Debouncing
   useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
+    // Prevent triggering on StrictMode double-mounts or initial renders
+    if (searchTerm === prevSearchTerm.current) {
       return;
     }
+    prevSearchTerm.current = searchTerm;
 
     const timer = setTimeout(() => {
       onSearchRef.current(searchTerm);
@@ -32,7 +33,7 @@ const SearchBar = ({ onSearch }) => {
       <input
         type="text"
         className="search-input"
-        placeholder="Search for posts by title or content..."
+        placeholder="Search for posts by title..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
