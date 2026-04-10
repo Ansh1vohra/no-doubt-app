@@ -4,13 +4,13 @@ const Post = require('../models/Post');
 // Fetch from JSONPlaceholder and save to MongoDB
 const fetchAndStorePosts = async (req, res) => {
     try {
-        const { data } = await axios.get('https://jsonplaceholder.typicode.com/posts');
+        const { data } = await axios.get('https://dummyjson.com/posts?limit=50');
         
-        // Loop and store
-        const operations = data.map(post => ({
+        // Loop and store the array found inside data.posts
+        const operations = data.posts.map(post => ({
             updateOne: {
                 filter: { id: post.id },
-                update: { $set: post },
+                update: { $set: { id: post.id, title: post.title, body: post.body, userId: post.userId } },
                 upsert: true
             }
         }));
@@ -18,7 +18,7 @@ const fetchAndStorePosts = async (req, res) => {
         await Post.bulkWrite(operations);
 
         if (res) {
-            res.status(200).json({ message: 'Posts fetched and stored successfully', count: data.length });
+            res.status(200).json({ message: 'Posts fetched and stored successfully', count: data.posts.length });
         } else {
             console.log('Posts fetched and stored successfully on startup');
         }
