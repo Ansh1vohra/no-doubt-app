@@ -7,6 +7,7 @@ const connectDB = require('./config/db');
 const postRoutes = require('./routes/postRoutes');
 const { fetchAndStorePosts } = require('./controllers/postController');
 const Post = require('./models/Post');
+const axios = require('axios');
 
 // Connect to MongoDB
 connectDB();
@@ -19,6 +20,11 @@ app.use(express.json());
 
 // Routes
 app.use('/api/posts', postRoutes);
+
+// Ping route for keep-alive
+app.get('/ping', (req, res) => {
+    res.status(200).send('pong');
+});
 
 // Fetch initial data on startup
 fetchAndStorePosts();
@@ -65,4 +71,15 @@ wss.on('connection', (ws) => {
 
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    
+    // Set up keep-alive ping every 9 minutes
+    const KEEP_ALIVE_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+    setInterval(async () => {
+        try {
+            await axios.get(`${KEEP_ALIVE_URL}/ping`);
+            console.log('Pinged server to keep alive (9 min interval)');
+        } catch (error) {
+            console.error('Keep-alive ping failed:', error.message);
+        }
+    }, 9 * 60 * 1000); // 9 minutes
 });
