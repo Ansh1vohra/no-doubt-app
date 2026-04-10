@@ -1,0 +1,176 @@
+FUNCTIONAL REQUIREMENTS DOCUMENT (FRD)
+🧩 Project Title
+
+Post Explorer — Full Stack Application with Real-Time Search
+
+1. 📌 SYSTEM OVERVIEW
+
+The system is a full-stack web application that:
+
+Fetches posts from an external API
+Stores them in a database
+Displays them on a frontend interface
+Provides real-time search using WebSockets
+2. 🏗️ ARCHITECTURE OVERVIEW
+Components:
+Frontend (React.js)
+Backend (Node.js + Express)
+Database (MongoDB)
+WebSocket Server (ws / socket.io)
+Flow:
+App loads → Backend fetches data from JSONPlaceholder
+Data stored in MongoDB
+Frontend fetches data via REST APIs
+Search queries handled via WebSocket
+3. 🎨 FRONTEND FRD (React)
+3.1 Pages & Components
+1. Home Page
+Displays list of posts
+Includes search bar (real-time)
+2. Components
+🔹 PostList
+Displays all posts
+Scrollable list/grid
+🔹 PostCard
+Shows:
+Title
+Body (short preview)
+Optional "View Details"
+🔹 SearchBar
+Input field
+Sends query via WebSocket on typing
+🔹 Loader
+Shows loading state
+🔹 EmptyState
+Shows "No results found"
+3.2 Functional Requirements
+FR-F1: Fetch Posts
+On page load:
+Call backend API → /api/posts
+Display all posts
+FR-F2: Real-Time Search
+On user typing:
+Send query via WebSocket
+Receive filtered posts instantly
+Update UI without refresh
+FR-F3: View Single Post
+Click on a post
+Navigate to /post/:id
+Fetch post via API
+3.3 UI Behavior
+Responsive layout (mobile + desktop)
+Debounce search input (300ms recommended)
+Loading indicator during API calls
+Smooth UI updates (no full reload)
+3.4 State Management
+Use React state or Context API
+Store:
+posts[]
+filteredPosts[]
+loading state
+search query
+4. ⚙️ BACKEND FRD (Node.js + Express)
+4.1 Modules
+1. Data Fetching Module
+Fetch posts from external API
+Save to MongoDB
+2. REST API Module
+Expose endpoints
+3. WebSocket Module
+Handle real-time search queries
+4.2 Database Schema
+Collection: Posts
+{
+  "_id": "ObjectId",
+  "userId": "Number",
+  "id": "Number",
+  "title": "String",
+  "body": "String"
+}
+4.3 Functional Requirements
+FR-B1: Fetch & Store Posts
+On server start OR API trigger:
+Call external API
+Store posts in MongoDB
+Avoid duplicates (use id)
+FR-B2: Get All Posts
+
+Endpoint:
+GET /api/posts
+
+Response:
+
+[
+  {
+    "id": 1,
+    "title": "Post title",
+    "body": "Post body"
+  }
+]
+FR-B3: Get Single Post
+
+Endpoint:
+GET /api/posts/:id
+
+FR-B4: Fetch & Save Trigger (Optional but good)
+
+Endpoint:
+POST /api/posts/fetch
+
+Fetch from API and store again
+4.4 WebSocket Functional Requirements
+FR-B5: Real-Time Search
+Client sends:
+{
+  "type": "search",
+  "query": "keyword"
+}
+Server:
+Searches MongoDB:
+title (case-insensitive)
+body (case-insensitive)
+Returns matching posts
+Response:
+{
+  "type": "results",
+  "data": [...]
+}
+4.5 Search Logic
+Use MongoDB query:
+{
+  $or: [
+    { title: { $regex: query, $options: "i" } },
+    { body: { $regex: query, $options: "i" } }
+  ]
+}
+4.6 Error Handling
+Handle:
+API failures
+DB connection issues
+Empty search results
+Invalid post ID
+4.7 Middleware
+JSON parsing
+CORS enabled
+5. 🔄 DATA FLOW
+Backend fetches from external API
+Stores in MongoDB
+Frontend → REST API → gets posts
+User types → WebSocket → backend search → results sent back
+6. 🚀 NON-FUNCTIONAL REQUIREMENTS
+Fast response (<500ms for search)
+Scalable backend
+Clean modular code
+Proper error responses
+Mobile responsive UI
+7. 🧪 EDGE CASES
+No internet → API fetch fails
+Empty DB
+No search results
+Rapid typing (handle debounce)
+Duplicate fetch requests
+8. 🧠 OPTIONAL ENHANCEMENTS (if time)
+Pagination
+Highlight search keywords
+Cache search results
+Add indexing in MongoDB
