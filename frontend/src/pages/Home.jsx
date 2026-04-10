@@ -3,6 +3,7 @@ import SearchBar from '../components/SearchBar';
 import PostList from '../components/PostList';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
+import Pagination from '../components/Pagination';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const WS_URL = import.meta.env.VITE_WS_URL;
@@ -12,6 +13,8 @@ const Home = () => {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const POSTS_PER_PAGE = 12;
   
   const wsRef = useRef(null);
 
@@ -61,6 +64,7 @@ const Home = () => {
   // Handle Search Input
   const handleSearch = (query) => {
     setSearchQuery(query);
+    setCurrentPage(1); // Reset to page 1 on new search
     
     if (query.trim() === '') {
       setFilteredPosts(posts);
@@ -77,6 +81,11 @@ const Home = () => {
     }
   };
 
+  // Calculate current posts slice
+  const indexOfLastPost = currentPage * POSTS_PER_PAGE;
+  const indexOfFirstPost = indexOfLastPost - POSTS_PER_PAGE;
+  const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+
   return (
     <>
       <SearchBar onSearch={handleSearch} />
@@ -84,7 +93,15 @@ const Home = () => {
       {loading ? (
         <Loader />
       ) : filteredPosts.length > 0 ? (
-        <PostList posts={filteredPosts} />
+        <>
+          <PostList posts={currentPosts} />
+          <Pagination 
+            totalItems={filteredPosts.length} 
+            itemsPerPage={POSTS_PER_PAGE} 
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+        </>
       ) : (
         <EmptyState />
       )}

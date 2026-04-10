@@ -1,0 +1,49 @@
+POST EXPLORER - API DOCUMENTATION
+
+The backend serves both standard REST protocols for initialization and WebSocket protocols for real-time querying.
+
+=========================
+1. REST ENDPOINTS
+=========================
+
+Endpoint: GET /ping
+Description: Returns a standard 200 OK 'pong' text. Used internally to prevent automated server sleep cycles (keep-alive).
+
+Endpoint: GET /api/posts
+Description: Fetches the entire indexed array of all seeded MongoDB posts.
+
+Endpoint: GET /api/posts/:id
+Description: Retrieves detailed document information for a precise post ID.
+
+
+=========================
+2. WEBSOCKET INTERFACE
+=========================
+
+The WebSocket interface handles search logic at blazing fast speeds avoiding strict HTTP connection overheads. 
+
+Connect to: ws://localhost:5000 (or wss://... in production)
+
+--- Search Request (Client -> Server) ---
+When the user types, the client transmits a stringified JSON body detailing the query:
+
+{
+  "type": "search",
+  "query": "exact or partial title to search"
+}
+
+
+--- Search Response (Server -> Client) ---
+The server evaluates the query via regex securely over Mongoose, and broadcasts back the filtered subset:
+
+{
+  "type": "results",
+  "data": [
+    {
+      "id": 1,
+      "title": "Matching Post Title",
+      "body": "Post body context...",
+      "userId": 9
+    }
+  ]
+}
